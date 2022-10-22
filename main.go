@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
+	// "os"
 
 	"strings"
 	"time"
@@ -22,10 +22,10 @@ func failOnError(err error, msg string) {
 
 func main() {
 
-	PORT := os.Getenv("MatchingURL")
-	
-	log.Printf("Connecting amqp://guest:guest@localhost:%s/",PORT)
-	conn, err := amqp.Dial("amqp://guest:guest@localhost:" + PORT + "/")
+	// PORT := os.Getenv("PORT")
+
+	fmt.Println("Connecting amqp://guest:guest@localhost:5672/")
+	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer conn.Close()
 
@@ -75,7 +75,7 @@ func main() {
 
 			switch serviceType {
 			case "create":
-				result, err = services.CreateMatching(n[1],n[2])
+				result, err = services.CreateMatching(n[1], n[2])
 			case "delete":
 				result, err = services.DeleteMatching(n[1])
 			default:

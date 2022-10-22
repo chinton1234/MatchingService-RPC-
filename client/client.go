@@ -4,11 +4,7 @@ import (
         "context"
         "log"
         "math/rand"
-        "os"
-        "strconv"
-        "strings"
         "time"
-
         amqp "github.com/rabbitmq/amqp091-go"
 )
 
@@ -30,7 +26,7 @@ func randInt(min int, max int) int {
         return min + rand.Intn(max-min)
 }
 
-func fibonacciRPC(n int) (res int, err error) {
+func sendRPC(n string) (res string, err error) {
         conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
         failOnError(err, "Failed to connect to RabbitMQ")
         defer conn.Close()
@@ -61,6 +57,7 @@ func fibonacciRPC(n int) (res int, err error) {
         failOnError(err, "Failed to register a consumer")
 
         corrId := randomString(32)
+        log.Printf(" [.] corrId %s", corrId)
 
         ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
         defer cancel()
@@ -74,14 +71,15 @@ func fibonacciRPC(n int) (res int, err error) {
                         ContentType:   "text/plain",
                         CorrelationId: corrId,
                         ReplyTo:       q.Name,
-                        Body:          []byte(strconv.Itoa(n)),
+                        Body:          []byte(n),
                 })
+
         failOnError(err, "Failed to publish a message")
 
         for d := range msgs {
+                log.Printf(" [.] Got %s", d.CorrelationId)
                 if corrId == d.CorrelationId {
-                        res, err = strconv.Atoi(string(d.Body))
-                        failOnError(err, "Failed to convert body to integer")
+                        res,err = string(d.Body),nil
                         break
                 }
         }
@@ -92,23 +90,11 @@ func fibonacciRPC(n int) (res int, err error) {
 func main() {
         rand.Seed(time.Now().UTC().UnixNano())
 
-        n := "create a6wdsa55 a56wd84sa1"
+        n := "create 63513f36506c462416419f61 213212"
 
-        log.Printf(" [x] Requesting fib(%d)", n)
-        res, err := fibonacciRPC(n)
+        log.Printf("[x] Requesting matching(%s)", n)
+        res, err := sendRPC(n)
+        
         failOnError(err, "Failed to handle RPC request")
-
-        log.Printf(" [.] Got %d", res)
-}
-
-func bodyFrom(args []string) int {
-        var s string
-        if (len(args) < 2) || os.Args[1] == "" {
-                s = "30"
-        } else {
-                s = strings.Join(args[1:], " ")
-        }
-        n, err := strconv.Atoi(s)
-        failOnError(err, "Failed to convert arg to integer")
-        return n
+        log.Printf(res)
 }
