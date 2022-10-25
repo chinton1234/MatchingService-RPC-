@@ -90,7 +90,7 @@ func sendRPC(n string) (res string, err error) {
 func main() {
         rand.Seed(time.Now().UTC().UnixNano())
 
-        n := "create 63513f36506c462416419f61 213212"
+        n := "create 63513f36506c462416419f61"
 
         log.Printf("[x] Requesting matching(%s)", n)
         res, err := sendRPC(n)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+
 	// "os"
 
 	"strings"
@@ -70,14 +71,21 @@ func main() {
 			n := strings.Fields(string(d.Body))
 
 			serviceType := n[0]
-
 			result, err := "none", error(nil)
 
 			switch serviceType {
 			case "create":
-				result, err = services.CreateMatching(n[1], n[2])
+				if len(n) == 3 {
+					result, err = services.CreateMatching(n[1], n[2])
+				} else {
+					result, err = "input error", error(nil)
+				}
 			case "delete":
-				result, err = services.DeleteMatching(n[1])
+				if len(n) == 2 {
+					result, err = services.DeleteMatching(n[1])
+				} else {
+					result, err = "input error", error(nil)
+				}
 			default:
 				result, err = "serviceType error", error(nil)
 			}
